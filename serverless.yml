@@ -1,0 +1,63 @@
+service: s3-object-lambda-image-resize
+frameworkVersion: "2"
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  lambdaHashingVersion: 20201221
+  stage: dev
+  region: us-east-1
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3-object-lambda:WriteGetObjectResponse
+          Resource: "*"
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject,
+            - s3:ListBucket
+          Resource:
+            - !GetAtt bucket.Arn
+            - !Join ["/", [{ Fn::GetAtt: [bucket, Arn] }, "*"]]
+
+functions:
+  resizer:
+    handler: handler.resizer
+    environment:
+      BUCKET_NAME: !Ref bucket
+
+resources:
+  Resources:
+    bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: !Sub ${self:service}-${self:provider.stage}
+
+    bucketAccessPoint:
+      Type: AWS::S3::AccessPoint
+      Properties:
+        Bucket: !Ref bucket
+        Name: ${self:service}-${self:provider.stage}-ap
+
+    lambdaAccessPoint:
+      Type: AWS::S3ObjectLambda::AccessPoint
+      Properties:
+        Name: ${self:service}-${self:provider.stage}-lambda-ap
+        ObjectLambdaConfiguration:
+          CloudWatchMetricsEnabled: true
+          SupportingAccessPoint: !Sub arn:aws:s3:${AWS::Region}:${AWS::AccountId}:accesspoint/${self:service}-${self:provider.stage}-ap
+
+          TransformationConfigurations:
+            - Actions: ["GetObject"]
+              ContentTransformation:
+                AwsLambda:
+                  FunctionArn: !GetAtt ResizerLambdaFunction.Arn
+
+  Outputs:
+    BucketName:
+      Description: Bucket name
+      Value: !Ref bucket

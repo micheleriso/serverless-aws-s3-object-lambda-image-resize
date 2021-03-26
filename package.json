@@ -1,0 +1,17 @@
+{
+  "name": "serverless-aws-s3-object-lambda-image-resize",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michele Riso <riso DOT michele AT gmail DOT com>",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {
+    "aws-sdk": "*",
+    "axios": "0.21.1",
+    "sharp": "^0.27.2"
+  }
+}
