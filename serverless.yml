@@ -18,8 +18,6 @@ provider:
         - Effect: Allow
           Action:
             - s3:PutObject
-            - s3:GetObject,
-            - s3:ListBucket
           Resource:
             - !GetAtt bucket.Arn
             - !Join ["/", [{ Fn::GetAtt: [bucket, Arn] }, "*"]]
