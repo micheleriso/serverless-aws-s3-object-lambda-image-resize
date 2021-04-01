@@ -1,6 +1,9 @@
 service: s3-object-lambda-image-resize
 frameworkVersion: "2"
 
+custom:
+  bucketName: 'BUCKET'
+
 provider:
   name: aws
   runtime: nodejs14.x
@@ -26,14 +29,14 @@ functions:
   resizer:
     handler: handler.resizer
     environment:
-      BUCKET_NAME: !Ref bucket
+      BUCKET_NAME: ${self:custom.bucketName}
 
 resources:
   Resources:
     bucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: !Sub ${self:service}-${self:provider.stage}
+        BucketName: ${self:custom.bucketName}
 
     bucketAccessPoint:
       Type: AWS::S3::AccessPoint

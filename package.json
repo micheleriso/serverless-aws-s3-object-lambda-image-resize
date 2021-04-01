@@ -10,7 +10,7 @@
   "license": "MIT",
   "devDependencies": {},
   "dependencies": {
-    "aws-sdk": "*",
+    "aws-sdk": "2.877.0",
     "axios": "0.21.1",
     "sharp": "^0.27.2"
   }

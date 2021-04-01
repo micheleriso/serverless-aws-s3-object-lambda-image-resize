@@ -2,10 +2,7 @@ const AWS = require('aws-sdk');
 const axios = require('axios');
 const sharp = require('sharp')
 
-/** START Workaround for bug #3675 **/
-const s3 = new AWS.S3({ region: "us-east-1", endpoint: "s3-object-lambda.us-east-1.amazonaws.com" });
-s3.__proto__.api.endpointPrefix = "s3-object-lambda";
-/** END Workaround for bug #3675 **/
+const S3 = new AWS.S3()
 
 //Get Bucket Name from the ENV Variables
 const BUCKET_NAME = process.env.BUCKET_NAME || "";
@@ -19,7 +16,7 @@ module.exports.resizer = async (event, context) => {
     //Requested image already existing in S3
     const { data: requestedImage } = await axios.get(inputS3Url, { responseType: 'arraybuffer' })
 
-    await s3.writeGetObjectResponse({
+    await S3.writeGetObjectResponse({
       RequestRoute: outputRoute,
       RequestToken: outputToken,
       Body: requestedImage
@@ -47,18 +44,14 @@ module.exports.resizer = async (event, context) => {
       const resizedImage = await sharp(fullSizeImage).resize(parseInt(width), parseInt(height)).toBuffer()
 
       //Return the resized image to S3
-      await s3.writeGetObjectResponse({
+      await S3.writeGetObjectResponse({
         RequestRoute: outputRoute,
         RequestToken: outputToken,
         Body: resizedImage,
       }).promise()
 
-      //We need to create a new S3 client with the right endpoint assigned
-      const s3Upload = new AWS.S3({ region: "us-east-1", endpoint: "s3.us-east-1.amazonaws.com" });
-      s3Upload.__proto__.api.endpointPrefix = "s3";
-
       //Uploading the resized image to S3
-      await s3Upload.upload({
+      await S3.upload({
         Bucket: BUCKET_NAME,
         Key: requestedObject,
         Body: resizedImage
